@@ -1,0 +1,60 @@
+h4{
+  text-align: center;
+}
+nav ul{
+  list-style: none;
+  text-align: center;
+}
+
+nav ul li{
+  display: inline-block;
+  padding: 10px;
+}
+
+.header {
+  width: 100%;
+  padding: 5px 10px;
+}
+
+.brand {
+  display: flex;
+  align-items: center; /* alinea verticalmente logo y texto */
+}
+
+.logo {
+  width: 80px;      /* mismo ancho fijo que en la imagen */
+  height: auto;
+  object-fit: contain;
+  margin-right: 15px;
+}
+
+.empresa {
+  flex: 1; /* ocupa todo el espacio restante */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* centra el texto verticalmente */
+  text-align: center;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.slogan {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+
+
+@media (max-width: 600px) {
+  .titulo {
+    font-size: 1.4rem;
+  }
+
+  .logo {
+    width: 60px;
+  }
+}
