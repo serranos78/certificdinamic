@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 // ✅ URL base de tu backend en Render
-const API = "https://certificdinamic.onrender.com";
+const API = "https://certificdinamic-production.up.railway.app";
 
 export default function ConsultaPersonaje() {
   const [animes, setAnimes] = useState([]);

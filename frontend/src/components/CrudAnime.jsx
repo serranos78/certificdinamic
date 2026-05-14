@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 // ✅ URL base correcta
-const API = "https://certificdinamic.onrender.com";
+const API = "https://certificdinamic-production.up.railway.app";
 
 export default function CrudAnime() {
   const [form, setForm] = useState({
