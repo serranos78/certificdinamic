@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const URL_GENERO = "http://localhost/dinamica/backend/genero.php";
+const URL = "http://localhost:3000/genero";
 
 export default function CrudGenero() {
   const [form, setForm] = useState({
@@ -13,9 +13,9 @@ export default function CrudGenero() {
   const [lista, setLista] = useState([]);
   const [editId, setEditId] = useState(null);
 
-  // ===== CARGAR DATOS
+  // ✅ GET
   const getGenero = async () => {
-    const res = await axios.get(URL_GENERO);
+    const res = await axios.get(URL);
     setLista(res.data);
   };
 
@@ -23,22 +23,22 @@ export default function CrudGenero() {
     getGenero();
   }, []);
 
-  // ===== CONTROL INPUTS
+  // ✅ CONTROL INPUTS
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // ===== GUARDAR / ACTUALIZAR
+  // ✅ CREATE / UPDATE
   const submit = async (e) => {
     e.preventDefault();
 
-    const res = await axios.post(URL_GENERO, {
-      ...form,
-      op: editId ? "update" : "create",
-      idgenero: editId
-    });
-
-    console.log(res.data);
+    if (editId) {
+      // 🔹 UPDATE
+      await axios.put(`${URL}/${editId}`, form);
+    } else {
+      // 🔹 CREATE
+      await axios.post(URL, form);
+    }
 
     setForm({
       nombre: "",
@@ -50,63 +50,33 @@ export default function CrudGenero() {
     getGenero();
   };
 
-  // ===== EDITAR
+  // ✅ EDITAR
   const editar = (g) => {
     setForm(g);
     setEditId(g.idgenero);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ===== ELIMINAR
+  // ✅ DELETE
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar género?")) return;
 
-    await axios.post(URL_GENERO, {
-      op: "delete",
-      idgenero: id
-    });
-
+    await axios.delete(`${URL}/${id}`);
     getGenero();
   };
 
   return (
     <>
-      {/* ===== ESTILOS ===== */}
-      <style>{`
-        .genero-card {
-          border-radius: 14px;
-          border: none;
-          box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-        }
-
-        .genero-header {
-          background: linear-gradient(135deg, #198754, #0f5132);
-          color: white;
-          text-align: center;
-          border-radius: 14px 14px 0 0;
-        }
-
-        .badge-pop {
-          padding: 5px 10px;
-          border-radius: 8px;
-          color: white;
-          font-size: 0.8rem;
-        }
-
-        .alta { background: #dc3545; }
-        .media { background: #ffc107; color: black; }
-        .baja { background: #0d6efd; }
-        .muyalta { background: #6f42c1; }
-      `}</style>
+      {/* ===== CONTENIDO VISUAL ===== */}
 
       <div className="container mt-4">
 
-        {/* ===== FORMULARIO ===== */}
+        {/* FORMULARIO */}
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-5">
-            <div className="card genero-card mb-4">
+            <div className="card mb-4">
 
-              <div className="card-header genero-header">
+              <div className="card-header bg-success text-white text-center">
                 <h6>{editId ? "Editar Género" : "Agregar Género"}</h6>
               </div>
 
@@ -155,7 +125,7 @@ export default function CrudGenero() {
           </div>
         </div>
 
-        {/* ===== TABLA ===== */}
+        {/* TABLA */}
         <table className="table table-hover table-sm">
           <thead className="table-dark text-center">
             <tr>
@@ -173,11 +143,11 @@ export default function CrudGenero() {
                 <td>{g.descripcion}</td>
 
                 <td className="text-center">
-                  <span className={`badge-pop ${
-                    g.popularidad === "Alta" ? "alta" :
-                    g.popularidad === "Media" ? "media" :
-                    g.popularidad === "Baja" ? "baja" :
-                    "muyalta"
+                  <span className={`badge ${
+                    g.popularidad === "Alta" ? "bg-danger" :
+                    g.popularidad === "Media" ? "bg-warning text-dark" :
+                    g.popularidad === "Baja" ? "bg-primary" :
+                    "bg-secondary"
                   }`}>
                     {g.popularidad}
                   </span>
@@ -198,7 +168,6 @@ export default function CrudGenero() {
                     Eliminar
                   </button>
                 </td>
-
               </tr>
             ))}
           </tbody>

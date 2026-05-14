@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const URL_PERSONAJE = "http://localhost/dinamica/backend/personaje.php";
-const URL_ANIME = "http://localhost/dinamica/backend/anime.php";
+// ✅ NUEVAS URLs (NODE)
+const URL_PERSONAJE = "http://localhost:3000/personaje";
+const URL_ANIME = "http://localhost:3000/anime";
 
 export default function CrudPersonaje() {
   const [form, setForm] = useState({});
@@ -10,13 +11,13 @@ export default function CrudPersonaje() {
   const [animes, setAnimes] = useState([]);
   const [editId, setEditId] = useState(null);
 
-  // ===== CARGAR PERSONAJES
+  // ✅ GET PERSONAJES
   const getPersonajes = async () => {
     const res = await axios.get(URL_PERSONAJE);
     setLista(res.data);
   };
 
-  // ===== CARGAR ANIMES (para dropdown)
+  // ✅ GET ANIMES (para dropdown)
   const getAnimes = async () => {
     const res = await axios.get(URL_ANIME);
     setAnimes(res.data);
@@ -31,56 +32,48 @@ export default function CrudPersonaje() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ✅ CREATE / UPDATE
   const submit = async (e) => {
     e.preventDefault();
 
-    await axios.post(URL_PERSONAJE, {
-      ...form,
-      op: editId ? "update" : "create",
-      idpersonaje: editId,
-    });
+    if (editId) {
+      // 🔹 UPDATE
+      await axios.put(`${URL_PERSONAJE}/${editId}`, form);
+    } else {
+      // 🔹 CREATE
+      await axios.post(URL_PERSONAJE, form);
+    }
 
     setForm({});
     setEditId(null);
     getPersonajes();
   };
 
+  // ✅ EDITAR
   const editar = (p) => {
     setForm(p);
     setEditId(p.idpersonaje);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // ✅ DELETE
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar personaje?")) return;
-    await axios.post(URL_PERSONAJE, { op: "delete", idpersonaje: id });
+
+    await axios.delete(`${URL_PERSONAJE}/${id}`);
     getPersonajes();
   };
 
   return (
     <>
-      <style>{`
-        .anime-card {
-          border-radius: 14px;
-          border: none;
-          box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-        }
-        .anime-header {
-          background: linear-gradient(135deg, #6f42c1, #3d2c8d);
-          color: white;
-          text-align: center;
-          border-radius: 14px 14px 0 0;
-        }
-      `}</style>
-
       <div className="container mt-4">
 
-        {/* ===== FORM ===== */}
+        {/* FORM */}
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-5">
-            <div className="card anime-card mb-4">
+            <div className="card mb-4">
 
-              <div className="card-header anime-header">
+              <div className="card-header bg-purple text-white text-center">
                 <h6>{editId ? "Editar Personaje" : "Agregar Personaje"}</h6>
               </div>
 
@@ -128,7 +121,7 @@ export default function CrudPersonaje() {
                     required
                   />
 
-                  {/* ✅ DROPDOWN DINÁMICO */}
+                  {/* ✅ DROPDOWN ANIME */}
                   <select
                     name="idanime"
                     className="form-control mb-3"
@@ -154,7 +147,7 @@ export default function CrudPersonaje() {
           </div>
         </div>
 
-        {/* ===== TABLA ===== */}
+        {/* TABLA */}
         <table className="table table-hover table-sm">
           <thead className="table-dark text-center">
             <tr>
@@ -183,13 +176,17 @@ export default function CrudPersonaje() {
                 </td>
 
                 <td className="text-center">
-                  <button className="btn btn-warning btn-sm me-1"
-                    onClick={() => editar(p)}>
+                  <button
+                    className="btn btn-warning btn-sm me-1"
+                    onClick={() => editar(p)}
+                  >
                     Editar
                   </button>
 
-                  <button className="btn btn-danger btn-sm"
-                    onClick={() => eliminar(p.idpersonaje)}>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => eliminar(p.idpersonaje)}
+                  >
                     Eliminar
                   </button>
                 </td>

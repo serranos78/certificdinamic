@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const URL_ANIME = "http://localhost/dinamica/backend/anime.php";
-const URL_CONSULTA = "http://localhost/dinamica/backend/consulta_personaje.php";
+// ✅ NUEVAS URLs (NODE)
+const URL_ANIME = "http://localhost:3000/anime";
 
 export default function ConsultaPersonaje() {
   const [animes, setAnimes] = useState([]);
   const [idanime, setIdanime] = useState("");
   const [resultados, setResultados] = useState([]);
 
-  // ===== CARGAR ANIMES
+  // ✅ CARGAR ANIMES
   const getAnimes = async () => {
     const res = await axios.get(URL_ANIME);
     setAnimes(res.data);
@@ -19,23 +19,35 @@ export default function ConsultaPersonaje() {
     getAnimes();
   }, []);
 
-  // ===== CONSULTA
+  // ✅ CONSULTA (AHORA ES GET)
   const consultar = async () => {
     if (!idanime) {
       alert("Selecciona un anime");
       return;
     }
 
-    const res = await axios.post(URL_CONSULTA, { idanime });
-    setResultados(res.data);
+    try {
+      // 🔥 CAMBIO IMPORTANTE
+      const res = await axios.get(
+        `http://localhost:3000/anime/${idanime}/personajes`
+      );
+
+      setResultados(res.data);
+
+    } catch (error) {
+      console.error(error);
+      alert("Error en la consulta");
+    }
   };
 
   return (
     <div className="container mt-4">
 
-      <h4 className="text-center mb-3">Consulta de Personajes por Anime</h4>
+      <h4 className="text-center mb-3">
+        Consulta de Personajes por Anime
+      </h4>
 
-      {/* ===== DROPDOWN ===== */}
+      {/* DROPDOWN */}
       <div className="row justify-content-center mb-3">
         <div className="col-md-5">
 
@@ -45,24 +57,30 @@ export default function ConsultaPersonaje() {
             onChange={(e) => setIdanime(e.target.value)}
           >
             <option value="">Selecciona un anime</option>
+
             {animes.map((a) => (
               <option key={a.idanime} value={a.idanime}>
                 {a.descripcionanime}
               </option>
             ))}
+
           </select>
 
-          <button className="btn btn-primary w-100" onClick={consultar}>
+          <button
+            className="btn btn-primary w-100"
+            onClick={consultar}
+          >
             Consultar
           </button>
 
         </div>
       </div>
 
-      {/* ===== TABLA ===== */}
+      {/* TABLA */}
       {resultados.length > 0 && (
         <div className="table-responsive">
           <table className="table table-bordered table-sm">
+
             <thead className="table-dark text-center">
               <tr>
                 <th>Nombre</th>
@@ -92,4 +110,3 @@ export default function ConsultaPersonaje() {
     </div>
   );
 }
-``
