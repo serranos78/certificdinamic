@@ -1,26 +1,43 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-// ✅ NUEVAS URLs (NODE)
-const URL_PERSONAJE = "http://localhost:3000/personaje";
-const URL_ANIME = "http://localhost:3000/anime";
+// ✅ URL base correcta
+const API = "https://certificdinamic.onrender.com";
 
 export default function CrudPersonaje() {
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState({
+    nombre: "",
+    edad: "",
+    rol: "",
+    fecha_aparicion: "",
+    idanime: ""
+  });
+
   const [lista, setLista] = useState([]);
   const [animes, setAnimes] = useState([]);
   const [editId, setEditId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // ✅ GET PERSONAJES
   const getPersonajes = async () => {
-    const res = await axios.get(URL_PERSONAJE);
-    setLista(res.data);
+    try {
+      const res = await axios.get(`${API}/personaje`);
+      setLista(res.data);
+    } catch (error) {
+      console.error("Error al cargar personajes:", error);
+      alert("Error al cargar personajes");
+    }
   };
 
-  // ✅ GET ANIMES (para dropdown)
+  // ✅ GET ANIMES
   const getAnimes = async () => {
-    const res = await axios.get(URL_ANIME);
-    setAnimes(res.data);
+    try {
+      const res = await axios.get(`${API}/anime`);
+      setAnimes(res.data);
+    } catch (error) {
+      console.error("Error al cargar animes:", error);
+      alert("Error al cargar animes");
+    }
   };
 
   useEffect(() => {
@@ -36,17 +53,32 @@ export default function CrudPersonaje() {
   const submit = async (e) => {
     e.preventDefault();
 
-    if (editId) {
-      // 🔹 UPDATE
-      await axios.put(`${URL_PERSONAJE}/${editId}`, form);
-    } else {
-      // 🔹 CREATE
-      await axios.post(URL_PERSONAJE, form);
-    }
+    try {
+      setLoading(true);
 
-    setForm({});
-    setEditId(null);
-    getPersonajes();
+      if (editId) {
+        await axios.put(`${API}/personaje/${editId}`, form);
+      } else {
+        await axios.post(`${API}/personaje`, form);
+      }
+
+      setForm({
+        nombre: "",
+        edad: "",
+        rol: "",
+        fecha_aparicion: "",
+        idanime: ""
+      });
+
+      setEditId(null);
+      getPersonajes();
+
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      alert("Error al guardar personaje");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ✅ EDITAR
@@ -60,8 +92,13 @@ export default function CrudPersonaje() {
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar personaje?")) return;
 
-    await axios.delete(`${URL_PERSONAJE}/${id}`);
-    getPersonajes();
+    try {
+      await axios.delete(`${API}/personaje/${id}`);
+      getPersonajes();
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("Error al eliminar");
+    }
   };
 
   return (
@@ -73,7 +110,7 @@ export default function CrudPersonaje() {
           <div className="col-md-6 col-lg-5">
             <div className="card mb-4">
 
-              <div className="card-header bg-purple text-white text-center">
+              <div className="card-header bg-primary text-white text-center">
                 <h6>{editId ? "Editar Personaje" : "Agregar Personaje"}</h6>
               </div>
 
@@ -84,7 +121,7 @@ export default function CrudPersonaje() {
                     name="nombre"
                     placeholder="Nombre"
                     className="form-control mb-2"
-                    value={form.nombre || ""}
+                    value={form.nombre}
                     onChange={handleChange}
                     required
                   />
@@ -94,7 +131,7 @@ export default function CrudPersonaje() {
                     name="edad"
                     placeholder="Edad"
                     className="form-control mb-2"
-                    value={form.edad || ""}
+                    value={form.edad}
                     onChange={handleChange}
                     required
                   />
@@ -102,7 +139,7 @@ export default function CrudPersonaje() {
                   <select
                     name="rol"
                     className="form-control mb-2"
-                    value={form.rol || ""}
+                    value={form.rol}
                     onChange={handleChange}
                     required
                   >
@@ -116,20 +153,21 @@ export default function CrudPersonaje() {
                     type="date"
                     name="fecha_aparicion"
                     className="form-control mb-2"
-                    value={form.fecha_aparicion || ""}
+                    value={form.fecha_aparicion}
                     onChange={handleChange}
                     required
                   />
 
-                  {/* ✅ DROPDOWN ANIME */}
+                  {/* SELECT ANIME */}
                   <select
                     name="idanime"
                     className="form-control mb-3"
-                    value={form.idanime || ""}
+                    value={form.idanime}
                     onChange={handleChange}
                     required
                   >
                     <option value="">Seleccionar Anime</option>
+
                     {animes.map((a) => (
                       <option key={a.idanime} value={a.idanime}>
                         {a.descripcionanime}
@@ -137,8 +175,12 @@ export default function CrudPersonaje() {
                     ))}
                   </select>
 
-                  <button className="btn btn-success w-100">
-                    {editId ? "Actualizar" : "Guardar"}
+                  <button className="btn btn-success w-100" disabled={loading}>
+                    {loading
+                      ? "Guardando..."
+                      : editId
+                      ? "Actualizar"
+                      : "Guardar"}
                   </button>
 
                 </form>
@@ -168,10 +210,10 @@ export default function CrudPersonaje() {
                 <td>{p.rol}</td>
                 <td>{p.fecha_aparicion}</td>
 
-                {/* ✅ Mostrar nombre del anime */}
                 <td className="text-center">
                   {
-                    animes.find(a => a.idanime == p.idanime)?.descripcionanime || p.idanime
+                    animes.find(a => a.idanime == p.idanime)?.descripcionanime
+                    || p.idanime
                   }
                 </td>
 

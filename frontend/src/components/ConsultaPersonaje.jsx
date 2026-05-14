@@ -1,25 +1,31 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-// ✅ NUEVAS URLs (NODE)
-const URL_ANIME = "http://localhost:3000/anime";
+// ✅ URL base de tu backend en Render
+const API = "https://certificdinamic.onrender.com";
 
 export default function ConsultaPersonaje() {
   const [animes, setAnimes] = useState([]);
   const [idanime, setIdanime] = useState("");
   const [resultados, setResultados] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // ✅ CARGAR ANIMES
+  // ✅ Cargar lista de animes
   const getAnimes = async () => {
-    const res = await axios.get(URL_ANIME);
-    setAnimes(res.data);
+    try {
+      const res = await axios.get(`${API}/anime`);
+      setAnimes(res.data);
+    } catch (error) {
+      console.error("Error al cargar animes:", error);
+      alert("No se pudieron cargar los animes");
+    }
   };
 
   useEffect(() => {
     getAnimes();
   }, []);
 
-  // ✅ CONSULTA (AHORA ES GET)
+  // ✅ Consulta por ID de anime
   const consultar = async () => {
     if (!idanime) {
       alert("Selecciona un anime");
@@ -27,16 +33,19 @@ export default function ConsultaPersonaje() {
     }
 
     try {
-      // 🔥 CAMBIO IMPORTANTE
+      setLoading(true);
+
       const res = await axios.get(
-        `http://localhost:3000/anime/${idanime}/personajes`
+        `${API}/anime/${idanime}/personajes`
       );
 
       setResultados(res.data);
 
     } catch (error) {
-      console.error(error);
-      alert("Error en la consulta");
+      console.error("Error en la consulta:", error);
+      alert("Error al obtener los datos");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,7 +56,7 @@ export default function ConsultaPersonaje() {
         Consulta de Personajes por Anime
       </h4>
 
-      {/* DROPDOWN */}
+      {/* ✅ SELECT */}
       <div className="row justify-content-center mb-3">
         <div className="col-md-5">
 
@@ -69,14 +78,15 @@ export default function ConsultaPersonaje() {
           <button
             className="btn btn-primary w-100"
             onClick={consultar}
+            disabled={loading}
           >
-            Consultar
+            {loading ? "Consultando..." : "Consultar"}
           </button>
 
         </div>
       </div>
 
-      {/* TABLA */}
+      {/* ✅ TABLA */}
       {resultados.length > 0 && (
         <div className="table-responsive">
           <table className="table table-bordered table-sm">
@@ -105,6 +115,11 @@ export default function ConsultaPersonaje() {
 
           </table>
         </div>
+      )}
+
+      {/* ✅ Mensaje si no hay datos */}
+      {(!loading && resultados.length === 0 && idanime) && (
+        <p className="text-center">No hay personajes para este anime.</p>
       )}
 
     </div>

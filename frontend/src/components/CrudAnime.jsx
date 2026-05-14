@@ -1,18 +1,31 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-//const URL = "http://localhost:3000/anime";
-const URL = "http://backend.onrender.com/anime";
+// ✅ URL base correcta
+const API = "https://certificdinamic.onrender.com";
 
 export default function CrudAnime() {
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState({
+    descripcionanime: "",
+    numtemporadas: "",
+    capitulos: "",
+    fechalanzam: "",
+    empresalanzam: ""
+  });
+
   const [lista, setLista] = useState([]);
   const [editId, setEditId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // ✅ GET
   const getData = async () => {
-    const res = await axios.get(URL);
-    setLista(res.data);
+    try {
+      const res = await axios.get(`${API}/anime`);
+      setLista(res.data);
+    } catch (error) {
+      console.error("Error al cargar datos:", error);
+      alert("Error al cargar animes");
+    }
   };
 
   useEffect(() => {
@@ -27,17 +40,34 @@ export default function CrudAnime() {
   const submit = async (e) => {
     e.preventDefault();
 
-    if (editId) {
-      // 🔹 UPDATE
-      await axios.put(`${URL}/${editId}`, form);
-    } else {
-      // 🔹 CREATE
-      await axios.post(URL, form);
-    }
+    try {
+      setLoading(true);
 
-    setForm({});
-    setEditId(null);
-    getData();
+      if (editId) {
+        // UPDATE
+        await axios.put(`${API}/anime/${editId}`, form);
+      } else {
+        // CREATE
+        await axios.post(`${API}/anime`, form);
+      }
+
+      setForm({
+        descripcionanime: "",
+        numtemporadas: "",
+        capitulos: "",
+        fechalanzam: "",
+        empresalanzam: ""
+      });
+
+      setEditId(null);
+      getData();
+
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      alert("Error al guardar datos");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const editar = (anime) => {
@@ -50,31 +80,36 @@ export default function CrudAnime() {
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar este anime?")) return;
 
-    await axios.delete(`${URL}/${id}`);
-    getData();
+    try {
+      await axios.delete(`${API}/anime/${id}`);
+      getData();
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("Error al eliminar");
+    }
   };
 
   return (
     <>
-      {/* ===== CONTENIDO VISUAL (NO CAMBIA) ===== */}
-
       <div className="container mt-4">
 
         {/* FORMULARIO */}
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-5">
             <div className="card mb-4">
+
               <div className="card-header bg-primary text-white text-center">
                 <h6>{editId ? "Editar Anime" : "Agregar Anime"}</h6>
               </div>
 
               <div className="card-body">
                 <form onSubmit={submit}>
+
                   <input
                     name="descripcionanime"
                     placeholder="Anime"
                     className="form-control mb-2"
-                    value={form.descripcionanime || ""}
+                    value={form.descripcionanime}
                     onChange={handleChange}
                     required
                   />
@@ -84,7 +119,7 @@ export default function CrudAnime() {
                     name="numtemporadas"
                     placeholder="Temporadas"
                     className="form-control mb-2"
-                    value={form.numtemporadas || ""}
+                    value={form.numtemporadas}
                     onChange={handleChange}
                     required
                   />
@@ -94,7 +129,7 @@ export default function CrudAnime() {
                     name="capitulos"
                     placeholder="Capítulos"
                     className="form-control mb-2"
-                    value={form.capitulos || ""}
+                    value={form.capitulos}
                     onChange={handleChange}
                     required
                   />
@@ -103,7 +138,7 @@ export default function CrudAnime() {
                     type="date"
                     name="fechalanzam"
                     className="form-control mb-2"
-                    value={form.fechalanzam || ""}
+                    value={form.fechalanzam}
                     onChange={handleChange}
                     required
                   />
@@ -112,14 +147,19 @@ export default function CrudAnime() {
                     name="empresalanzam"
                     placeholder="Empresa"
                     className="form-control mb-3"
-                    value={form.empresalanzam || ""}
+                    value={form.empresalanzam}
                     onChange={handleChange}
                     required
                   />
 
-                  <button className="btn btn-success w-100">
-                    {editId ? "Actualizar" : "Guardar"}
+                  <button className="btn btn-success w-100" disabled={loading}>
+                    {loading
+                      ? "Guardando..."
+                      : editId
+                      ? "Actualizar"
+                      : "Guardar"}
                   </button>
+
                 </form>
               </div>
             </div>

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const URL = "http://localhost:3000/genero";
+// ✅ URL base del backend
+const API = "https://certificdinamic.onrender.com";
 
 export default function CrudGenero() {
   const [form, setForm] = useState({
@@ -12,11 +13,17 @@ export default function CrudGenero() {
 
   const [lista, setLista] = useState([]);
   const [editId, setEditId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // ✅ GET
   const getGenero = async () => {
-    const res = await axios.get(URL);
-    setLista(res.data);
+    try {
+      const res = await axios.get(`${API}/genero`);
+      setLista(res.data);
+    } catch (error) {
+      console.error("Error al cargar géneros:", error);
+      alert("Error al cargar datos");
+    }
   };
 
   useEffect(() => {
@@ -32,22 +39,32 @@ export default function CrudGenero() {
   const submit = async (e) => {
     e.preventDefault();
 
-    if (editId) {
-      // 🔹 UPDATE
-      await axios.put(`${URL}/${editId}`, form);
-    } else {
-      // 🔹 CREATE
-      await axios.post(URL, form);
+    try {
+      setLoading(true);
+
+      if (editId) {
+        // UPDATE
+        await axios.put(`${API}/genero/${editId}`, form);
+      } else {
+        // CREATE
+        await axios.post(`${API}/genero`, form);
+      }
+
+      setForm({
+        nombre: "",
+        descripcion: "",
+        popularidad: ""
+      });
+
+      setEditId(null);
+      getGenero();
+
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      alert("Error al guardar datos");
+    } finally {
+      setLoading(false);
     }
-
-    setForm({
-      nombre: "",
-      descripcion: "",
-      popularidad: ""
-    });
-
-    setEditId(null);
-    getGenero();
   };
 
   // ✅ EDITAR
@@ -61,14 +78,17 @@ export default function CrudGenero() {
   const eliminar = async (id) => {
     if (!window.confirm("¿Eliminar género?")) return;
 
-    await axios.delete(`${URL}/${id}`);
-    getGenero();
+    try {
+      await axios.delete(`${API}/genero/${id}`);
+      getGenero();
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("Error al eliminar");
+    }
   };
 
   return (
     <>
-      {/* ===== CONTENIDO VISUAL ===== */}
-
       <div className="container mt-4">
 
         {/* FORMULARIO */}
@@ -115,8 +135,12 @@ export default function CrudGenero() {
                     <option value="Altisima">Muy Alta</option>
                   </select>
 
-                  <button className="btn btn-success w-100">
-                    {editId ? "Actualizar" : "Guardar"}
+                  <button className="btn btn-success w-100" disabled={loading}>
+                    {loading
+                      ? "Guardando..."
+                      : editId
+                      ? "Actualizar"
+                      : "Guardar"}
                   </button>
 
                 </form>
