@@ -1,0 +1,21 @@
+{
+  "name": "dinamica",
+  "version": "1.0.0",
+  "description": "Certificación página web Dinámica",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/serranos78/certificdinamic.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/serranos78/certificdinamic/issues"
+  },
+  "homepage": "https://github.com/serranos78/certificdinamic#readme"
+}

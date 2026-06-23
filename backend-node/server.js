@@ -3,7 +3,11 @@ const cors = require('cors');
 
 const app = express();
 
-app.use(cors());
+
+app.use(cors({
+  origin: "https://dinamicpage.netlify.app"
+}));
+
 app.use(express.json());
 
 // ✅ TODAS LAS RUTAS
